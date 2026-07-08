@@ -19,7 +19,7 @@ def test_create_user(session, mock_db_time):
 
         user = session.scalar(select(User).where(User.username == 'test'))
 
-        user.username = "jojo"
+        user.username = 'jojo'
         session.commit()
         breakpoint()
 
