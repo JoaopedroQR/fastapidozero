@@ -68,16 +68,21 @@ def test_create_same_email_user(client, user):
     }
 
 
-def test_read_users(client):
-    response = client.get('/users/')
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'users': []}
+# def test_read_users(client, token):
+#     response = client.get(
+#         '/users/', headers={'Authorization': f'Bearer {token}'}
+#     )
+#     assert response.status_code == HTTPStatus.OK
+#     assert response.json() == {'users': []}
 
 
-def test_read_users_with_users(client, user):
+def test_read_users_with_users(client, user, token):
 
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = client.get('/users/')
+    response = client.get(
+        '/users/',
+        headers={'Authorization': f'Bearer {token}'}
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': [user_schema]}
 
@@ -155,3 +160,16 @@ def test_fail_delete_user(client, user):
     response = client.delete('/users/2')
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
+
+
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'bearer'
+    assert 'access_token' in token

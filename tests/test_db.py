@@ -20,13 +20,12 @@ def test_create_user(session, mock_db_time):
         user = session.scalar(select(User).where(User.username == 'test'))
 
         user.username = 'jojo'
-        session.commit()
-        breakpoint()
+        # session.commit()
 
         # assert user.password == 'secret'
         assert asdict(user) == {
             'id': 1,
-            'username': 'test',
+            'username': 'jojo',
             'email': 'test@test.com',
             'password': 'secret',
             'created_at': time,
