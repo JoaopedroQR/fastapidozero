@@ -94,24 +94,27 @@ def read_user_by_id(user_id: int, session=Depends(get_session)):
 
 
 @app.put('/users/{user_id}', response_model=UserPublic)
-def update_user(user_id: int, user: UserSchema, session=Depends(get_session)):
-    user_db = session.scalar(select(User).where(User.id == user_id))
+def update_user(
+    user_id: int,
+    user: UserSchema,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
 
-    if not user_db:
+    if current_user.id != user_id:
         raise HTTPException(
-            detail='User not found', status_code=HTTPStatus.NOT_FOUND
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    user_db.email = user.email
-    user_db.username = user.username
-    user_db.password = get_password_hash(user.password)
-
-    session.add(user_db)
+    current_user.email = user.email
+    current_user.username = user.username
+    current_user.password = get_password_hash(user.password)
     try:
+        session.add(current_user)
         session.commit()
-        session.refresh(user_db)
+        session.refresh(current_user)
 
-        return user_db
+        return current_user
     except IntegrityError:
         raise HTTPException(
             detail='Username or Email already exists',
@@ -129,16 +132,21 @@ def update_user(user_id: int, user: UserSchema, session=Depends(get_session)):
     # return user_with_id
 
 
-@app.delete('/users/{user_id}', response_model=Message)
-def delete_user(user_id: int, session=Depends(get_session)):
-    user_db = session.scalar(select(User).where(User.id == user_id))
+@app.delete(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
+)
+def delete_user(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
 
-    if not user_db:
+    if current_user.id != user_id:
         raise HTTPException(
-            detail='User not found', status_code=HTTPStatus.NOT_FOUND
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    session.delete(user_db)
+    session.delete(current_user)
     session.commit()
 
     return {'message': 'User deleted'}
