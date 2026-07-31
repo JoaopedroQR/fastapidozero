@@ -6,15 +6,23 @@ authors = [
     {name = "Your Name",email = "you@example.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.14, <4.0"
+requires-python = ">=3.12, <4.0"
 dependencies = [
-    "sqlalchemy (>=2.0.51,<3.0.0)",
+    "sqlalchemy[asyncio] (>=2.0.51,<3.0.0)",
     "pydantic-settings (>=2.14.2,<3.0.0)",
     "alembic (>=1.18.5,<2.0.0)",
-    "fastapi[standard] (>=0.139.0,<0.140.0)",
+    "fastapi[standard] (>=0.141.1,<0.142.0)",
     "pwdlib[argon2] (>=0.3.0,<0.4.0)",
     "pyjwt (>=2.13.0,<3.0.0)",
-    "tzdata (>=2026.3,<2027.0)"
+    "tzdata (>=2026.3,<2027.0)",
+    "aiosqlite (>=0.22.1,<0.23.0)",
+    "pytest (>=9.1.1,<10.0.0)",
+    "lint (>=1.2.1,<2.0.0)",
+    "pydantic (>=2.13.4,<3.0.0)",
+    "rich (>=15.0.0,<16.0.0)",
+    "aiometer (>=1.0.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "greenlet (>=3.5.4,<4.0.0)"
 ]
 
 
@@ -28,7 +36,8 @@ dev = [
     "pytest-cov (>=7.1.0,<8.0.0)",
     "taskipy (>=1.14.1,<2.0.0)",
     "ruff (>=0.15.20,<0.16.0)",
-    "typos (>=1.48.0,<2.0.0)"
+    "typos (>=1.48.0,<2.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)"
 ]
 
 [tool.ruff]
@@ -43,9 +52,11 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
 preview = true
 quote-style = 'single'
 
-[tool.pytest]
+[tool.pytest.ini_options]
 pythonpath = ['.']
 addopts = ['-p', 'no:warnings', '--cov=fast_zero', '--cov-context=test']
+asyncio_default_fixture_loop_scope = 'function'
+
 
 [tool.taskipy.tasks]
 lint = 'ruff check'
