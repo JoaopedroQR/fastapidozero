@@ -85,6 +85,14 @@ def test_read_user_by_id(client, user):
     assert response.json() == user_schema
 
 
+def test_read_user_by_id_not_found(client, user):
+
+    # user_schema = UserPublic.model_validate(user).model_dump()
+    response = client.get('/users/10')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
 def test_update_user(client, user, token):
     response = client.put(
         '/users/1',
@@ -103,18 +111,18 @@ def test_update_user(client, user, token):
     }
 
 
-# def test_fail_update_user(client, user, token):
-#     response = client.put(
-#         '/users/2',
-#         headers={'Authorization': f'Bearer {token}'},
-#         json={
-#             'username': 'bob',
-#             'email': 'bob@example.com',
-#             'password': 'bob',
-#         },
-#     )
-#     assert response.status_code == HTTPStatus.NOT_FOUND
-#     assert response.json() == {'detail': 'User not found'}
+def test_fail_update_user(client, user, token):
+    response = client.put(
+        f'/users/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'bob',
+        },
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_update_integrity_error(client, user, token):
@@ -152,7 +160,10 @@ def test_delete_user(client, user, token):
     assert response.json() == {'message': 'User deleted'}
 
 
-# def test_fail_delete_user(client, user):
-#     response = client.delete('/users/2')
-#     assert response.status_code == HTTPStatus.NOT_FOUND
-#     assert response.json() == {'detail': 'User not found'}
+def test_fail_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id + 1}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}

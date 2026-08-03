@@ -66,3 +66,6 @@ run = 'fastapi dev fast_zero/app.py'
 pre_test = 'task lint'
 test = 'pytest -s -x -vv'
 post_test = 'coverage html --show-contexts'
+
+[tool.coverage.run]
+concurrency = ["thread","greenlet"]
