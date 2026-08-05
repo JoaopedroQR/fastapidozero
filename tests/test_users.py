@@ -29,7 +29,7 @@ def test_create_same_name_user(client, user):
     response = client.post(
         '/users/',
         json={
-            'username': 'Teste',
+            'username': user.username,
             'email': 'alice@example.com',
             'password': 'testtest',
         },
@@ -48,7 +48,7 @@ def test_create_same_email_user(client, user):
         '/users/',
         json={
             'username': 'Alice',
-            'email': 'Teste@email.com',
+            'email': user.email,
             'password': 'testtest',
         },
     )
@@ -111,9 +111,9 @@ def test_update_user(client, user, token):
     }
 
 
-def test_fail_update_user(client, user, token):
+def test_update_user_with_worng_user(client, other_user, token):
     response = client.put(
-        f'/users/{user.id + 1}',
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
@@ -160,9 +160,9 @@ def test_delete_user(client, user, token):
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_fail_delete_user(client, user, token):
+def test__delete_user_wrong_user(client, other_user, token):
     response = client.delete(
-        f'/users/{user.id + 1}', headers={'Authorization': f'Bearer {token}'}
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN

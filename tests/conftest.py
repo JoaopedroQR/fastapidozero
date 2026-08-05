@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pytest
 import pytest_asyncio
+from factory import Factory, LazyAttribute, Sequence
 from fastapi.testclient import TestClient
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -79,11 +80,23 @@ async def user(session: AsyncSession):
 
     password = 'testtest'
 
-    user = User(
-        username='Teste',
-        email='Teste@email.com',
-        password=get_password_hash(password),
-    )
+    user = UserFactory(password=get_password_hash(password))
+
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    user.clean_password = password
+
+    return user
+
+
+@pytest_asyncio.fixture
+async def other_user(session: AsyncSession):
+
+    password = 'testtest'
+
+    user = UserFactory(password=get_password_hash(password))
 
     session.add(user)
     await session.commit()
@@ -106,3 +119,12 @@ def token(client, user):
 @pytest.fixture
 def settings():
     return Settings()
+
+
+class UserFactory(Factory):
+    class Meta:
+        model = User
+
+    username = Sequence(lambda n: f'test{n}')
+    email = LazyAttribute(lambda obj: f'{obj.username}@teste.com')
+    password = LazyAttribute(lambda obj: f'{obj.username}@example.com')
